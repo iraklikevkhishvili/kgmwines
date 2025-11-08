@@ -1,0 +1,6 @@
+@use "../.auto/abstracts.auto" as abs;
+.button--submit {
+    background-color: abs.$red-500;
+    height: 100px;
+    width: 100px;
+}

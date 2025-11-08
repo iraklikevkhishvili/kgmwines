@@ -1,0 +1,23 @@
+/// ==========================================================================
+/// abstracts/functions
+/// Functions only. No selectors, no @mixin, no @extend.
+/// ==========================================================================
+@use "sass:math";
+
+/// Convert px to rem
+/// @param {number} $px   Accepts unitless (treated as px) or px
+/// @param {number} $base Root font size (default 16px)
+@function rem($px, $base: 16px) {
+    @if math.is-unitless($px) {
+        $px: $px * 1px;
+    }
+
+    @if math.is-unitless($base) {
+        $base: $base * 1px;
+    }
+
+    @return math.div($px, $base) * 1rem;
+}
+
+/// Allowing hover only on devices that suppor hover
+/// @function hover() {}

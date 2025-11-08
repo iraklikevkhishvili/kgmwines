@@ -1,0 +1,44 @@
+@use "../.auto/abstracts.auto" as abs;
+
+.header {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100px;
+    background: abs.$color-bg;
+    z-index: abs.$z-sticky;
+    border-bottom: abs.$border solid abs.$color-border;
+}
+.header__toggle-close,
+.header__toggle-open {
+    aspect-ratio: 1/1;
+    width: 50px;
+}
+.header-modal {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    inset: 0;
+    background: black;
+    opacity: 0.5;
+    z-index: 1;
+}
+.header.open .header-modal {
+    display: block;
+}
+.header-nav {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 700px;
+    background: abs.$color-bg;
+    z-index: abs.$z-sticky;
+}
+
+.header-nav.open {
+    display: block;
+}

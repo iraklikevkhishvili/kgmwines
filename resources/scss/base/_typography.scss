@@ -1,0 +1,171 @@
+/// ==========================================================================
+/// base/typography
+/// ==========================================================================
+@use "../.auto/abstracts.auto" as abs;
+
+body {
+    font-family: abs.$font-family-base;
+    font-size: abs.$fs-sm;
+    font-weight: abs.$font-weight-regular;
+    text-transform: none;
+    line-height: 1.75rem;
+    letter-spacing: 0.06563rem;
+    text-decoration: none;
+
+    @include abs.responsive(abs.$bp-lg) {
+        line-height: 1.5rem;
+        letter-spacing: 0.06125rem;
+    }
+}
+
+h1,
+.u-h1,
+.u-heading-1 {
+    // typography
+    font-family: abs.$font-family-heading;
+    font-size: abs.$fs-3xl;
+    font-weight: abs.$font-weight-semibold;
+    text-transform: abs.$heading-transform-default;
+    line-height: 3.5rem;
+    letter-spacing: 0.35rem;
+    text-decoration: none;
+    // color
+    color: abs.$color-text;
+
+    @include abs.responsive(abs.$bp-lg) {
+        line-height: 2.25rem;
+        letter-spacing: 0.2rem;
+    }
+}
+
+h2,
+.u-h2,
+.u-heading-2 {
+    // typography
+    font-family: abs.$font-family-heading;
+    font-size: abs.$fs-2xl;
+    font-weight: abs.$font-weight-semibold;
+    text-transform: abs.$heading-transform-default;
+    line-height: 2.25rem;
+    letter-spacing: 0.3rem;
+    text-decoration: none;
+    // color
+    color: abs.$color-text;
+
+    // spacing
+    @include abs.responsive(abs.$bp-lg) {
+        line-height: 2rem;
+        letter-spacing: 0.2625rem;
+    }
+}
+
+h3,
+.u-h3,
+.u-heading-3 {
+    font-family: abs.$font-family-heading;
+    font-size: abs.$fs-xl;
+    font-weight: abs.$font-weight-semibold;
+    text-transform: abs.$heading-transform-default;
+    line-height: 1.75rem;
+    letter-spacing: 0.3rem;
+    text-decoration: none;
+    color: abs.$color-text;
+
+    // spacing
+    @include abs.responsive(abs.$bp-lg) {
+        line-height: 1.875rem;
+        letter-spacing: 0.275rem;
+    }
+}
+
+h4,
+.u-h4,
+.u-heading-4 {
+    font-family: abs.$font-family-heading;
+    font-size: abs.$fs-lg;
+    font-weight: abs.$font-weight-semibold;
+    text-transform: abs.$heading-transform-default;
+    line-height: 1.75rem;
+    letter-spacing: 0.25rem;
+    text-decoration: none;
+    //color
+    color: abs.$color-text;
+
+    @include abs.responsive(abs.$bp-lg) {
+        line-height: 1.25rem;
+        letter-spacing: 0.2rem;
+    }
+}
+
+/// h5,
+/// .u-h5
+/// .u-heading-5 {}
+h6,
+.u-h6,
+.u-heading-6 {
+    font-family: abs.$font-family-heading;
+    font-size: abs.$fs-xxs;
+    font-weight: abs.$font-weight-semibold;
+    text-transform: abs.$heading-transform-default;
+    line-height: 1.75rem;
+    letter-spacing: 0.25rem;
+    text-decoration: none;
+    //color
+    color: abs.$color-text;
+
+    @include abs.responsive(abs.$bp-lg) {
+        line-height: 1.25rem;
+        letter-spacing: 0.2rem;
+    }
+}
+
+p,
+.u-p,
+.u-paragraph {
+    margin-bottom: 0.75rem;
+    text-wrap: pretty;
+}
+
+a,
+.u-a,
+.u-link {
+    font-family: abs.$font-family-base;
+    font-size: abs.$fs-sm;
+    font-weight: abs.$font-weight-regular;
+    text-transform: none;
+    line-height: 1.75rem;
+    letter-spacing: 0.06563rem;
+    text-decoration: none;
+    color: abs.$color-text;
+
+    @include abs.responsive(abs.$bp-lg) {
+        line-height: 1.5rem;
+        letter-spacing: 0.06125rem;
+    }
+}
+
+/// Small semantic tweaks (safe, minimal)
+b,
+strong {
+    font-weight: abs.$font-weight-semibold;
+}
+
+em,
+i {
+    font-style: italic;
+}
+
+small {
+    font-size: 0.875em;
+}
+
+:is(code, kbd, samp, pre) {
+    font-family: abs.$font-family-mono;
+    font-size: .95em;
+}
+
+pre {
+    overflow: auto;
+    padding: .75rem;
+    border-radius: abs.$radius;
+}

@@ -1,0 +1,80 @@
+/// ==========================================================================
+/// base/reset
+/// Reset styles here.
+/// Only general resets, no component-specific resets.
+/// ==========================================================================
+
+
+/// 1. Use a more-intuitive box-sizing model
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+/// 2) Prevent text-size adjust in iOS landscape
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    tab-size: 4;
+}
+
+html:focus-within {
+    scroll-behavior: smooth;
+}
+
+/// 3) Media elements behave predictably and scale
+img,
+picture,
+video,
+canvas,
+svg {
+    display: block;
+    max-width: 100%;
+}
+
+img,
+video {
+    height: auto;
+}
+
+/// 4) List styles
+ol,
+ul {
+    list-style: none;
+}
+
+
+/// 5)
+button,
+input,
+select,
+textarea {
+    font: inherit;
+    color: inherit;
+}
+
+fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+
+a {
+    text-decoration-skip-ink: auto;
+}
+
+/// 6) Hidden/templated content
+[hidden] {
+    display: none;
+}
+
+template {
+    display: none;
+}

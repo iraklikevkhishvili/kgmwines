@@ -1,0 +1,185 @@
+/// ==========================================================================
+/// base/forms
+/// ==========================================================================
+@use"../.auto/abstracts.auto" as abs;
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: abs.$border solid abs.$color-border;
+    background-color: abs.$color-bg;
+    border-radius: abs.$radius-sm;
+    padding: abs.$space-2 abs.$space-3;
+    line-height: 1.4;
+}
+
+/* Remove iOS inner shadow & Firefox outline quirks */
+input,
+textarea {
+    -webkit-appearance: none;
+    appearance: none;
+    background-clip: padding-box;
+    cursor: auto;
+}
+
+/* Placeholder color */
+::placeholder {
+    color: abs.$color-text-muted;
+    opacity: 1;
+    /* Firefox */
+}
+
+/* Focus states — accessible & consistent */
+:where(input, select, textarea, button):focus-visible {
+    outline: abs.$focus-outline-width solid abs.$color-focus;
+    outline-offset: abs.$focus-outline-offset;
+    border-radius: inherit;
+}
+
+/* Disabled / readonly */
+:where(input, select, textarea, button)[disabled],
+:where(input, select, textarea)[readonly] {
+    cursor: not-allowed;
+    opacity: abs.$opacity-disabled;
+}
+
+/* Validation hints (add these states via HTML/JS as needed) */
+.is-valid {
+    border-color: abs.$color-success;
+}
+
+.is-invalid {
+    border-color: abs.$color-danger;
+}
+
+/* Buttons: element defaults only (project buttons live in components) */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+    display: inline-block;
+    border: abs.$border solid abs.$color-border-strong;
+    background: abs.$color-bg;
+    color: abs.$color-text;
+    border-radius: abs.$radius-sm;
+    padding: abs.$space-2 abs.$space-4;
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+}
+
+/* Checkboxes & radios: align + spacing (visual look stays native/minimal) */
+input[type="checkbox"],
+input[type="radio"] {
+    inline-size: abs.rem(25);
+    block-size: abs.rem(25);
+    padding: 0;
+    margin-inline-end: abs.$space-2;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+input[type="checkbox"] {
+    border-radius: 0;
+    border: abs.$border-thick solid abs.$color-border;
+    position: relative;
+
+    &::before {
+        content: '✔';
+        position: absolute;
+        color: abs.$color-text;
+        max-height: 100%;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+    }
+}
+
+input[type="checkbox"]:checked {
+    background-color: abs.$gold-100;
+    border-color: abs.$color-text;
+
+    &::before {
+        display: block;
+    }
+}
+
+/* Range (keep native, just spacing) */
+input[type="range"] {
+    width: 100%;
+}
+
+/* File input (simple, consistent padding) */
+input[type="file"] {
+    display: block;
+    padding-block: abs.$space-2;
+}
+
+/* Fieldset/legend/label */
+fieldset {
+    border: 1px solid abs.$color-border;
+    border-radius: abs.$radius-sm;
+    padding: abs.$space-3;
+    margin: 0 0 abs.$space-4;
+}
+
+legend {
+    padding: 0 abs.$space-2;
+    font-weight: abs.$font-weight-medium;
+}
+
+label {
+    display: inline-block;
+    margin-block-end: abs.$space-1;
+}
+
+/* Textareas */
+textarea {
+    min-block-size: 8rem;
+    resize: vertical;
+}
+
+/* Selects: minimal normalization */
+select {
+    background-color: abs.$color-bg;
+}
+
+/* Inline forms — handy in headers/filters */
+.form--inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: abs.$space-3;
+    align-items: center;
+}
+
+/* Simple field stack with consistent spacing */
+.form-row {
+    margin-block-end: abs.$space-3;
+}
+
+/* Visually hidden (for accessible labels/help text) */
+.visually-hidden {
+    position: absolute !important;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}

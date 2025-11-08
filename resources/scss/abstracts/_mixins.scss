@@ -1,0 +1,13 @@
+/// ==========================================================================
+/// abstracts/mixins
+/// Mixins only. No selectors, no @extend.
+/// Use `!default` so app- or theme-level overrides are possible.
+/// ==========================================================================
+@use "./variables" as var;
+
+// Responsive breakpoint mixin
+@mixin responsive($breakpoint, $direction: max) {
+    @media only screen and (#{$direction}-width: $breakpoint) {
+        @content;
+    }
+}

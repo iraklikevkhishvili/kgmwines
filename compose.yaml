@@ -1,0 +1,141 @@
+services:
+    laravel.test:
+        build:
+            context: ./vendor/laravel/sail/runtimes/8.4
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: "${WWWGROUP}"
+        image: sail-8.4/app
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        ports:
+            - "${APP_PORT:-8080}:80"
+            - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
+        environment:
+            WWWUSER: "${WWWUSER}"
+            LARAVEL_SAIL: 1
+            XDEBUG_MODE: "${SAIL_XDEBUG_MODE:-off}"
+            XDEBUG_CONFIG: "${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}"
+            IGNITION_LOCAL_SITES_PATH: "${PWD}"
+        volumes:
+            - .:/var/www/html
+        networks:
+            - sail
+        depends_on:
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            meilisearch:
+                condition: service_healthy
+            minio:
+                condition: service_healthy
+            mailpit:
+                condition: service_started
+
+    mysql:
+        image: mysql:8.0
+        ports:
+            - "${FORWARD_DB_PORT:-3306}:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+            MYSQL_ROOT_HOST: "%"
+            MYSQL_DATABASE: "${DB_DATABASE}"
+            MYSQL_USER: "${DB_USERNAME}"
+            MYSQL_PASSWORD: "${DB_PASSWORD}"
+        volumes:
+            - sail-mysql:/var/lib/mysql
+            - ./vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh
+        networks:
+            - sail
+        healthcheck:
+            test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${DB_PASSWORD} || exit 1"]
+            retries: 3
+            timeout: 5s
+
+    redis:
+        image: redis:alpine
+        ports:
+            - "${FORWARD_REDIS_PORT:-6379}:6379"
+        volumes:
+            - sail-redis:/data
+        networks:
+            - sail
+        healthcheck:
+            test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+            retries: 3
+            timeout: 5s
+
+    meilisearch:
+        image: getmeili/meilisearch:latest
+        ports:
+            - "${FORWARD_MEILISEARCH_PORT:-7700}:7700"
+        environment:
+            MEILI_NO_ANALYTICS: "${MEILI_NO_ANALYTICS:-false}"
+        volumes:
+            - sail-meilisearch:/meili_data
+        networks:
+            - sail
+        healthcheck:
+            test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:7700/health >/dev/null 2>&1 || exit 1"]
+            retries: 3
+            timeout: 5s
+
+    minio:
+        image: minio/minio:latest
+        ports:
+            - "${FORWARD_MINIO_PORT:-9000}:9000"
+            - "${FORWARD_MINIO_CONSOLE_PORT:-8900}:8900"
+        environment:
+            MINIO_ROOT_USER: "${MINIO_ROOT_USER}"
+            MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD}"
+        volumes:
+            - sail-minio:/data
+        networks:
+            - sail
+        command: minio server /data --console-address ":8900"
+        healthcheck:
+            test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/9000'"]
+            interval: 10s
+            timeout: 3s
+            retries: 10
+            start_period: 10s
+
+    mailpit:
+        image: axllent/mailpit:latest
+        ports:
+            - "${FORWARD_MAILPIT_PORT:-1025}:1025"
+            - "${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025"
+        networks:
+            - sail
+
+    phpmyadmin:
+        image: phpmyadmin:latest
+        depends_on:
+            mysql:
+                condition: service_healthy
+        environment:
+            PMA_HOST: mysql
+            PMA_USER: "${DB_USERNAME}"
+            PMA_PASSWORD: "${DB_PASSWORD}"
+            PMA_ARBITRARY: "0"
+            UPLOAD_LIMIT: 128M
+        ports:
+            - "${PHPMYADMIN_PORT:-8081}:80"
+        networks:
+            - sail
+        restart: unless-stopped
+
+networks:
+    sail:
+        driver: bridge
+
+volumes:
+    sail-mysql:
+        driver: local
+    sail-redis:
+        driver: local
+    sail-meilisearch:
+        driver: local
+    sail-minio:
+        driver: local

@@ -1,0 +1,54 @@
+/// ==========================================================================
+/// base/utilities
+/// ==========================================================================
+@use"../.auto/abstracts.auto" as abs;
+
+.u-sr-only {
+    opacity: 0;
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.u-skip-link {
+    display: block;
+    position: absolute;
+    left: -999px;
+    top: -999px;
+    background-color: abs.$white;
+    z-index: 99999;
+    color: black;
+    line-height: abs.rem(40);
+    border-radius: abs.$radius;
+    padding: 0 abs.rem(16);
+    font-family: abs.$font-family-base;
+    letter-spacing: abs.rem(1.5);
+    font-size: abs.rem(14);
+
+    &:focus,
+    &:focus-visible {
+        top: abs.rem(10);
+        left: abs.rem(10);
+    }
+}
+
+.u-no-scroll {
+    overflow: hidden;
+    overscroll-behavior: none;
+    //height: 100%;
+}
+
+/// .u-hide-scrollbar {}
+
+.u-container {
+    width: 100%;
+    padding: abs.rem(50) 4%;
+}
+
+.u-container {
+    width: 100%;
+    padding: abs.rem(50) 4%;
+}

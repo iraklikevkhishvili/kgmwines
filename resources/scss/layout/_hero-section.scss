@@ -1,0 +1,41 @@
+@use "../.auto/abstracts.auto" as abs;
+
+///========================================
+/// Hero section layout--------------------
+///========================================
+.section--hero {
+    width: 100%;
+}
+.hero__inner {
+    width: 100%;
+    padding: 0;
+}
+.hero__media {
+    width: 100%;
+    aspect-ratio: 3.5/1;
+    background: abs.$color-bg-dark;
+}
+.hero__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+.hero__content {
+    margin: 0 auto;
+    width: 70%;
+    max-width: abs.rem(1600);
+    padding: abs.rem(56) 0;
+
+}
+.hero__title {
+    margin: abs.rem(24) 0;
+    text-align: center;
+}
+.hero__subtitle {
+    text-align: center;
+    margin-bottom: abs.rem(56);
+}
+.hero__paragraph {
+    text-align: center;
+}

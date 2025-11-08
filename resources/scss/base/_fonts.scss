@@ -1,0 +1,28 @@
+/// ==========================================================================
+/// base/fonts
+/// ==========================================================================
+@use"../.auto/abstracts.auto" as abs;
+
+@font-face {
+    font-family: 'Asul';
+    src: url('#{abs.$font-path}asul-v21-latin-700.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto';
+    src: url('#{abs.$font-path}roboto-v47-latin-regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto';
+    src: url('#{abs.$font-path}roboto-v47-latin-600.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}

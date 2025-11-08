@@ -1,0 +1,79 @@
+/// ==========================================================================
+/// base/tables
+/// ==========================================================================
+@use"../.auto/abstracts.auto" as abs;
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background: abs.$color-bg;
+    border: abs.$border solid abs.$color-border;
+    border-radius: abs.$radius-sm;
+    /* will apply visually with overflow wrapper */
+}
+
+caption {
+    text-align: left;
+    padding: abs.$space-2 0;
+    color: abs.$color-text-muted;
+    font-size: abs.$fs-xs;
+}
+
+thead th {
+    font-weight: abs.$font-weight-medium;
+    text-align: left;
+    border-block-end: 1px solid abs.$color-border-strong;
+}
+
+tbody th[scope="row"] {
+    text-align: left;
+}
+
+th,
+td {
+    padding: abs.$space-2 abs.$space-3;
+    vertical-align: middle;
+    border-block-end: 1px solid abs.$color-border;
+}
+
+/* Numeric columns alignment helper */
+th[scope="col"][data-num],
+td[data-num] {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Zebra stripes (opt-in) */
+.table--striped tbody tr:nth-child(odd) td {
+    background: abs.$color-bg-muted;
+}
+
+/* Condensed density (opt-in) */
+.table--compact th,
+.table--compact td {
+    padding: abs.$space-1 abs.$space-2;
+}
+
+/* Responsive wrapper: add overflow on small viewports */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: abs.$radius-sm;
+    border: 1px solid abs.$color-border;
+}
+
+.table-responsive>table {
+    margin: 0;
+    /* avoid double borders/gaps inside wrapper */
+    border: 0;
+    /* wrapper provides the border */
+}
+
+/* Sticky header (opt-in; apply when used inside .table-responsive) */
+.table--sticky thead th {
+    position: sticky;
+    top: 0;
+    background: abs.$color-bg;
+    z-index: 1;
+}

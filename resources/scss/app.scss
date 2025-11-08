@@ -1,0 +1,20 @@
+@charset "UTF-8";
+@use ".auto/all.auto";
+@use ".auto/abstracts.auto" as abs;
+//@use ".auto/base.auto" as base;
+//@use ".auto/components.auto" as comp;
+@use "./layout/header";
+@use "./layout/hero-section";
+.main {
+    margin-top: abs.rem(100);
+    width: 100%;
+}
+
+.section {
+    width: 100%;
+}
+
+.section__inner {
+    width: 100%;
+    padding: abs.rem(50px) 4%;
+}

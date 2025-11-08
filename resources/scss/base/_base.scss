@@ -1,0 +1,65 @@
+/// ==========================================================================
+/// base/base
+/// ==========================================================================
+@use"../.auto/abstracts.auto" as abs;
+
+/// 1) Root scrolling behavior
+html {
+    scroll-behavior: smooth; // Smooth by default; disable for reduced motion below
+    scroll-padding-top: var(--scroll-offset, 0); // Offset for in-page anchors; override via :root or layout
+    overscroll-behavior-y: contain;
+    font-size: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
+/// 2) Body defaults
+body {
+    background: abs.$color-bg;
+    color: abs.$color-text;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    text-rendering: optimizeSpeed;
+}
+
+/// 3) Focus ring — visible, non-shifty
+:where(a, button, input, select, textarea, summary, [role="button"], [tabindex]:not([tabindex="-1"])) {
+    transition:
+        outline-color abs.$duration-200 ease,
+        box-shadow abs.$duration-200 ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+:where(a, button, input, select, textarea, summary, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: abs.$focus-outline-width solid abs.$color-focus;
+    border-radius: inherit;
+    z-index: 1;
+    //  border-radius: inherit;
+    /* soft halo without layout shift */
+    //box-shadow: 0 0 0 abs.rem(4) rgba(abs.$gold-300, 0.35);
+}
+
+/// 4) Links: hint to browsers for better gesture handling
+a {
+    touch-action: manipulation;
+}
+
+/// 5) Main margin so header can be fixed
+main {
+    margin-top: abs.rem(100);
+}

@@ -1,0 +1,256 @@
+/// ==========================================================================
+/// abstracts/colors
+/// Variables only. No selectors, no @mixin, no @extend.
+/// Use `!default` so app- or theme-level overrides are possible.
+/// ==========================================================================
+@use "./colors" as col;
+@use "./functions" as fun;
+
+// 0) META -------------------------------------------------------------------
+$brand-name: "KGM" !default; // optional
+
+// ==========================================================================
+// 1) PATHS FOR STATIC ASSETS -----------------------------------------------
+// ==========================================================================
+$font-path: "http://localhost:8080/static/fonts/";
+$image-path: "http://localhost:8080/static/media/images/";
+$video-path: "http://localhost:8080/static/media/videos/";
+
+
+// ==========================================================================
+// 2) SEMANTIC COLOR TOKENS -------------------------------------------------
+// ==========================================================================
+// background colors
+$color-bg: col.$white !default;
+$color-bg-muted: col.$gray-100 !default;
+$color-bg-dark: col.$gray-300 !default;
+
+// border colors
+$color-border-light: col.$gray-300 !default;
+$color-border-muted: col.$gray-400 !default;
+$color-border: col.$gray-600 !default;
+$color-border-strong: col.$gray-800 !default;
+
+// text colors
+$color-text: col.$gray-800 !default;
+$color-text-muted: col.$gray-600 !default;
+$color-heading: col.$gray-800 !default;
+$color-label: col.$gray-600 !default;
+
+// semantic colors
+$color-primary: col.$gold-600 !default;
+$color-secondary: col.$gold-500 !default;
+$color-primary-contrast: col.$white !default;
+
+$color-accent: col.$pink-100 !default;
+$color-accent-contrast: col.$black !default;
+
+$color-focus: col.$gold-300 !default;
+
+$color-on-primary: col.$green-500 !default;
+$color-off-primary: col.$gray-500 !default;
+
+$color-info: col.$blue-500 !default;
+$color-success: col.$green-500 !default;
+$color-warning: col.$amber-500 !default;
+$color-danger: col.$red-500 !default;
+
+// Optional: dark theme tokens (used later by a theming mixin or CSS vars)
+$theme-light: (
+    bg: $color-bg,
+    bg-muted: $color-bg-muted,
+    bg-dark: $color-bg-dark,
+    border: $color-border,
+    border-light: $color-border-light,
+    border-muted: $color-border-muted,
+    text: $color-text,
+    text-muted: $color-text-muted,
+    heading: $color-heading,
+    label: $color-label,
+    primary: $color-primary,
+    secondary: $color-secondary,
+    primary-contrast: $color-primary-contrast,
+    accent: $color-accent,
+    accent-contrast: $color-accent-contrast,
+    focus: $color-focus,
+    on-primary: $color-on-primary,
+    off-primary: $color-off-primary,
+    info: $color-info,
+    success: $color-success,
+    warning: $color-warning,
+    danger: $color-danger) !default;
+
+$theme-dark: (
+    bg: col.$gray-900,
+    bg-muted: col.$gray-800,
+    bg-dark: col.$gray-400,
+    border: col.$gray-400,
+    border-muted: col.$gray-700,
+    text: col.$gray-50,
+    text-muted: col.$gray-400,
+    heading: col.$white,
+    primary: col.$gold-300,
+    secondary: col.$gold-500,
+    primary-contrast: col.$white,
+    accent: col.$pink-600,
+    accent-contrast: col.$black,
+    info: col.$blue-500,
+    success: col.$green-500,
+    warning: col.$amber-500,
+    danger: col.$red-500) !default;
+
+
+// ==========================================================================
+// 3) TYPOGRAPHY ------------------------------------------------------------
+// ==========================================================================
+$font-sans: 'Roboto',
+system-ui,
+-apple-system,
+'Segoe UI',
+'Helvetica Neue',
+Arial,
+sans-serif !default;
+$font-serif: 'Asul',
+Georgia,
+'Times New Roman',
+serif !default;
+$font-mono: ui-monospace,
+SFMono-Regular,
+Menlo,
+Monaco,
+Consolas,
+'Liberation Mono',
+monospace !default;
+
+$font-family-base: $font-sans !default;
+$font-family-heading: $font-serif !default;
+$font-family-mono: $font-mono !default;
+
+// Weights
+$font-weight-light: 300 !default;
+$font-weight-regular: 400 !default;
+$font-weight-medium: 500 !default;
+$font-weight-semibold: 600 !default;
+$font-weight-bold: 700 !default;
+
+// Transform defaults
+$heading-transform-default: uppercase !default;
+$button-transform-default: uppercase !default;
+$link-transform-default: uppercase !default;
+
+// Fluid type scale (clamp)
+$fs-xxs: clamp(0.75rem, 1.2vw, 0.8125rem) !default; // ~12–13
+$fs-xs : clamp(0.8125rem, 1.3vw, 0.875rem) !default; // 13–14
+$fs-sm : clamp(0.875rem, 1.4vw, 0.9375rem) !default; // 14–15
+$fs-md : clamp(1rem, 1.6vw, 1.0625rem) !default; // 16–17
+$fs-lg : clamp(1.125rem, 1.9vw, 1.25rem) !default; // 18–20
+$fs-xl : clamp(1.375rem, 2.25vw, 1.5rem) !default; // 22–24
+$fs-2xl: clamp(1.75rem, 3vw, 2rem) !default; // 28–32
+$fs-3xl: clamp(2rem, 4.3vw, 3.5rem) !default; // 32–56
+
+// ==========================================================================
+// 4) SPACING SCALE ---------------------------------------------------------
+// ==========================================================================
+// 4px base (t-shirt sizes). Use a consistent rhythm everywhere.
+$space-0: 0 !default;
+$space-1: fun.rem(4) !default; // 4px
+$space-2: fun.rem(8) !default; // 8px
+$space-3: fun.rem(12) !default; // 12px
+$space-4: fun.rem(16) !default; // 16px
+$space-5: fun.rem(20) !default; // 20px
+$space-6: fun.rem(24) !default; // 24px
+$space-8: fun.rem(32) !default; // 32px
+$space-10: fun.rem(40) !default; // 40px
+$space-12: fun.rem(48) !default; // 48px
+
+
+
+// ==========================================================================
+// 6) BREAKPOINTS -----------------------------------------------------------
+// ==========================================================================
+$bp-xs: 480px !default;
+$bp-sm: 640px !default;
+$bp-md: 768px !default;
+$bp-lg: 1024px !default;
+$bp-xl: 1280px !default;
+$bp-2xl: 1536px !default;
+
+// Optional: a map for programmatic usage (consumed by a mixin)
+$breakpoints: (
+    xs: $bp-xs,
+    sm: $bp-sm,
+    md: $bp-md,
+    lg: $bp-lg,
+    xl: $bp-xl,
+    xxl: $bp-2xl) !default;
+
+
+// ==========================================================================
+// 7) RADII, SHADOWS, BORDERS -----------------------------------------------
+// ==========================================================================
+$radius-none: 0 !default;
+$radius-sm: 4px !default;
+$radius: 8px !default;
+$radius-lg: 12px !default;
+$radius-xl: 16px !default;
+$radius-2xl: 24px !default;
+$circle: 50% !default;
+
+$border-thin: 0.5px !default;
+$border: 1px !default;
+$border-thick: 2px !default;
+
+$shadow-sm: 0 0 2px 1px rgba(col.$black, 0.05) !default;
+$shadow: 0 0 8px 4px rgba(col.$black, 0.1) !default;
+$shadow-lg: 0 0 16px 4px rgba(col.$black, 0.2) !default;
+
+// ==========================================================================
+// 8) Z-INDEX SCALE ---------------------------------------------------------
+// ==========================================================================
+$z-base: 0 !default;
+$z-docked: 10 !default;
+$z-sticky: 100 !default;
+$z-dropdown: 1000 !default;
+$z-overlay: 1100 !default;
+$z-modal: 1200 !default;
+$z-toast: 1300 !default;
+
+// ==========================================================================
+// 9) MOTION: DURATIONS & EASING --------------------------------------------
+// ==========================================================================
+$duration-100: 100ms !default;
+$duration-150: 150ms !default;
+$duration-200: 200ms !default;
+$duration-300: 300ms !default;
+$duration-500: 500ms !default;
+$duration-700: 700ms !default;
+$duration-1000: 1000ms !default;
+
+$duration-fast: 100ms !default;
+$duration-default: 300ms !default;
+$duration-med: 500ms !default;
+$duration-slow: 1000ms !default;
+
+$ease-in: cubic-bezier(0.4, 0, 1, 1) !default;
+$ease-out: cubic-bezier(0, 0, 0.2, 1) !default;
+$ease-in-out: cubic-bezier(0.4, 0, 0.2, 1) !default;
+$ease-emphasized: cubic-bezier(0.2, 0, 0, 1) !default;
+
+
+// ==========================================================================
+// 10) OPACITY / BLUR -------------------------------------------------------
+// ==========================================================================
+$opacity-disabled: 0.6 !default;
+$opacity-muted: 0.8 !default;
+
+$blur-sm: 4px !default;
+$blur: 8px !default;
+$blur-lg: 16px !default;
+
+
+
+// ==========================================================================
+// 11) FOCUSABILITY --------------------------------------------------------
+// ==========================================================================
+$focus-outline-width: 3px;
+$focus-outline-offset: 0;

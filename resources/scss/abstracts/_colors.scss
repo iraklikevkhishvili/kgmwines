@@ -1,0 +1,35 @@
+/// ==========================================================================
+/// abstracts/colors
+/// Design tokens only. No selectors, no @mixin, no @extend.
+/// Use `!default` so app- or theme-level overrides are possible.
+/// ==========================================================================
+
+$white: #ffffff !default;
+$black: #0e0e0e !default;
+$gray-50: #f8f9fa !default;
+$gray-100: #f1f3f5 !default;
+$gray-200: #e9ecef !default;
+$gray-300: #dee2e6 !default;
+$gray-400: #ced4da !default;
+$gray-500: #adb5bd !default;
+$gray-600: #868e96 !default;
+$gray-700: #495057 !default;
+$gray-800: #343a40 !default;
+$gray-900: #212529 !default;
+
+// brand palette (adjust to your gold/teal scheme)
+$gold-100: #f6efe3 !default;
+$gold-200: #f0e6d6 !default;
+$gold-300: #dfc285 !default;
+$gold-500: #b8a084 !default;
+$gold-600: #ab8e50 !default;
+
+// brand accent palette
+$pink-100: #ffe8e8 !default;
+$pink-600: #d1a2a2 !default;
+
+// accent palette
+$red-500: #bb0d0d !default;
+$green-500: #2f9e44 !default;
+$blue-500: #1c7ed6 !default;
+$amber-500: #f59f00 !default;
