@@ -1,405 +1,342 @@
-import { setExpanded, setHidden, isActivationKey, Keys } from '../core/a11y.js';
+// resources/js/components/accordion.js
+import {
+    setAriaExpanded,
+    setAriaHidden,
+    isActivationKey,
+    arrowIntent,
+    isHomeEnd,
+    onEscapeWithin,
+} from '../core/a11y/index.js';
 
-// resources/js/accordion-min.js
-/*
-document.addEventListener('DOMContentLoaded', () => {
-    // Optional: initial ARIA sanity (safe if attributes already exist)
-    document.querySelectorAll('[data-accordion-item]').forEach((item) => {
-        const btn = item.querySelector('[data-accordion-trigger]');
-        const panel = item.querySelector('[data-accordion-content]');
-        if (!btn || !panel) return;
-        if (!btn.hasAttribute('aria-expanded')) btn.setAttribute('aria-expanded', 'false');
-        if (!panel.hasAttribute('aria-hidden')) panel.setAttribute('aria-hidden', 'true');
-    });
+const accordionSelector = '[data-accordion]';
+const accordionItemSelector = '[data-accordion-item]';
+const accordionTriggerSelector = '[data-accordion-trigger]';
+const accordionContentSelector = '[data-accordion-content]';
 
-    // One delegated listener for all accordions
-    document.addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-accordion-trigger]');
-        if (!btn) return;
-
-        const item = btn.closest('[data-accordion-item]');
-        const root = btn.closest('[data-accordion]');
-        const panel = item && item.querySelector('[data-accordion-content]');
-        if (!item || !root || !panel) return;
-
-        const willOpen = btn.getAttribute('aria-expanded') !== 'true';
-
-        // If single-mode, close others first
-        if (willOpen && root.getAttribute('data-accordion') === 'single') {
-            root.querySelectorAll('[data-accordion-item]').forEach((i) => {
-                if (i === item) return;
-                i.classList.remove('is-open');
-                i.querySelectorAll('[data-accordion-trigger]').forEach((t) => t.setAttribute('aria-expanded', 'false'));
-                i.querySelectorAll('[data-accordion-content]').forEach((p) => p.setAttribute('aria-hidden', 'true'));
-            });
-        }
-
-        // Toggle current
-        btn.setAttribute('aria-expanded', String(willOpen));
-        panel.setAttribute('aria-hidden', String(!willOpen));
-        item.classList.toggle('is-open', willOpen);
-    });
-
-    // Optional: keyboard support for Enter/Space on custom elements
-    document.addEventListener('keydown', (e) => {
-        const btn = e.target.closest('[data-accordion-trigger]');
-        if (!btn) return;
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            btn.click();
-        }
-    });
-});
-
-document.querySelectorAll('[data-accordion-item]').forEach(item => {
-    const panel = item.querySelector('[data-accordion-content]');
-    const btn = item.querySelector('[data-accordion-trigger]');
-
-    // set closed state initially
-    panel.style.setProperty('--acc-max', panel.scrollHeight + 'px');
-    if (panel.getAttribute('aria-hidden') !== 'false') {
-        panel.setAttribute('aria-hidden', 'true');
+/* -------------------- Animation + sizing helpers -------------------- */
+function setMax(panel, px) {
+    const v = `${Math.max(0, px)}px`;
+    if (panel.style.getPropertyValue('--acc-max') !== v) {
+        panel.style.setProperty('--acc-max', v);
     }
-
-    btn.addEventListener('click', () => {
-        const open = panel.getAttribute('aria-hidden') === 'false';
-        if (!open) {
-            // measure each time in case content changed
-            panel.style.setProperty('--acc-max', panel.scrollHeight + 'px');
-            panel.setAttribute('aria-hidden', 'false');
-        } else {
-            panel.setAttribute('aria-hidden', 'true');
+}
+function measure(panel) {
+    return (panel && panel.scrollHeight) || 0;
+}
+function animateOpen(panel) {
+    setMax(panel, measure(panel));
+}
+function animateClose(panel) {
+    setMax(panel, measure(panel));
+    requestAnimationFrame(() => setMax(panel, 0));
+}
+/** If panel is open, keep its --acc-max in sync with current content size. */
+function updatePanelMaxHeight(panel) {
+    if (panel instanceof HTMLElement && panel.getAttribute('aria-hidden') !== 'true') {
+        setMax(panel, measure(panel));
+    }
+}
+/** Recalculate --acc-max for any open ancestor accordion panels (for nesting). */
+function syncOpenAncestorPanels(fromEl) {
+    let node = fromEl?.parentElement;
+    while (node) {
+        if (node.matches?.(accordionContentSelector) && node.getAttribute('aria-hidden') === 'false') {
+            setMax(node, measure(node));
         }
-    });
-});
-*/
-
-
-function initAccordion(root) {
-    const items = Array.from(root.querySelectorAll('[data-accordion-item]'));
-    const triggers = items.map(i => i.querySelector('[data-accordion-trigger]'));
-    const panels = items.map(i => i.querySelector('[data-accordion-content]'));
-
-    function toggle(i, force) {
-        const open = force ?? (triggers[i].getAttribute('aria-expanded') !== 'true');
-        setExpanded(triggers[i], open);
-        setHidden(panels[i], !open);
-        // (If animating height, do it here without breaking aria)
+        node = node.parentElement;
     }
-
-    // Single mode: close siblings
-    function openSingle(i) {
-        triggers.forEach((_, idx) => toggle(idx, idx === i));
-    }
-
-    triggers.forEach((btn, i) => {
-        btn.addEventListener('click', () => openSingle(i));
-        btn.addEventListener('keydown', (e) => {
-            if (isActivationKey(e)) { e.preventDefault(); openSingle(i); return; }
-            if (e.key === Keys.ArrowDown) { e.preventDefault(); (triggers[i+1] ?? triggers[0]).focus(); }
-            if (e.key === Keys.ArrowUp)   { e.preventDefault(); (triggers[i-1] ?? triggers[triggers.length-1]).focus(); }
-            if (e.key === Keys.Home) { e.preventDefault(); triggers[0].focus(); }
-            if (e.key === Keys.End)  { e.preventDefault(); triggers[triggers.length-1].focus(); }
-        });
-    });
-
-    // Initial state (closed)
-    //panels.forEach(p => setHidden(p, true));
-    //triggers.forEach(t => setExpanded(t, false));
+}
+/** Run after layout settles (2 rAFs ≈ next paint). */
+function afterLayout(cb) {
+    requestAnimationFrame(() => requestAnimationFrame(cb));
 }
 
-initAccordion();
+/* -------------------- Observers -------------------- */
+function bindResizeObservers(entries) {
+    const disposers = [];
 
-
-
-
-/*document.addEventListener('DOMContentLoaded', () => {
-    // Utility: focusable elements (for inert fallback)
-    const focusableSel = [
-        'a[href]',
-        'area[href]',
-        'button:not([disabled])',
-        'input:not([disabled]):not([type="hidden"])',
-        'select:not([disabled])',
-        'textarea:not([disabled])',
-        '[contenteditable="true"]',
-        '[tabindex]'
-    ].join(',');
-
-    const hasInert = 'inert' in HTMLElement.prototype;
-
-    function setFocusableDisabled(container, disabled) {
-        container.querySelectorAll(focusableSel).forEach(el => {
-            if (disabled) {
-                if (!el.hasAttribute('data-prev-tabindex') && el.hasAttribute('tabindex')) {
-                    el.setAttribute('data-prev-tabindex', el.getAttribute('tabindex'));
-                }
-                el.setAttribute('tabindex', '-1');
-            } else {
-                if (el.hasAttribute('data-prev-tabindex')) {
-                    el.setAttribute('tabindex', el.getAttribute('data-prev-tabindex'));
-                    el.removeAttribute('data-prev-tabindex');
-                } else if (el.getAttribute('tabindex') === '-1') {
-                    el.removeAttribute('tabindex');
-                }
-            }
-        });
-    }
-
-    // Root scoping helpers
-    function getRootItems(root) {
-        return Array.from(root.querySelectorAll('[data-accordion-item]'))
-            .filter(i => i.closest('[data-accordion]') === root);
-    }
-    function getRootButtons(root) {
-        return Array.from(root.querySelectorAll('[data-accordion-trigger]'))
-            .filter(b => b.closest('[data-accordion]') === root && b.closest('[data-accordion-item]'));
-    }
-    function getDirectParts(item) {
-        const btn = item.querySelector(':scope [data-accordion-trigger]');
-        const panel = item.querySelector(':scope [data-accordion-content]');
-        return { btn, panel };
-    }
-
-    // Height utilities
-    function measureForOpen(panel) {
-        panel.style.setProperty('--acc-max', panel.scrollHeight + 'px');
-    }
-    function setAuto(panel) {
-        panel.style.setProperty('--acc-max', 'max-content'); // or 'none'
-    }
-    function isAuto(panel) {
-        const v = panel.style.getPropertyValue('--acc-max').trim();
-        return v === 'max-content' || v === 'none';
-    }
-
-    // Swap to auto AFTER open transition
-    function cancelAuto(panel) {
-        if (panel._accAutoTimer) {
-            clearTimeout(panel._accAutoTimer);
-            panel._accAutoTimer = null;
-        }
-        if (panel._accAutoEndHandler) {
-            panel.removeEventListener('transitionend', panel._accAutoEndHandler);
-            panel._accAutoEndHandler = null;
-        }
-    }
-
-    function scheduleAuto(panel, delay = 300) {
-        cancelAuto(panel);
-
-        // Prefer transitionend (exact), fall back to a timer
-        const handler = (e) => {
-            if (e && e.propertyName !== 'max-height') return;
-            cancelAuto(panel);
-            // Only auto if still open
+    entries.forEach(({ panel }) => {
+        const ro = new ResizeObserver(() => {
             if (panel.getAttribute('aria-hidden') === 'false') {
-                setAuto(panel);
-            }
-        };
-        panel._accAutoEndHandler = handler;
-        panel.addEventListener('transitionend', handler, { once: true });
-
-        panel._accAutoTimer = setTimeout(handler, delay + 50);
-    }
-
-    // Re-measure this panel and all open ancestor panels so outer max-heights stay correct
-    function refreshOpenAncestors(startPanel) {
-        let p = startPanel;
-        while (p && p instanceof HTMLElement) {
-            if (p.matches('[data-accordion-content]')) {
-                if (p.getAttribute('aria-hidden') === 'false') {
-                    // If ancestor is already auto, keep it auto (no need to force px)
-                    if (!isAuto(p)) measureForOpen(p);
-                }
-            }
-            const next = p.parentElement ? p.parentElement.closest('[data-accordion-content]') : null;
-            p = next;
-        }
-    }
-
-    // (Optional) burst syncing kept as-is if you still want it
-    function cancelBurst(panel) {
-        if (panel && panel._accBurstRaf) {
-            cancelAnimationFrame(panel._accBurstRaf);
-            panel._accBurstRaf = null;
-        }
-    }
-    function burstAncestors(panel, duration = 380) {
-        cancelBurst(panel);
-        const start = performance.now();
-        const tick = (now) => {
-            refreshOpenAncestors(panel);
-            if (now - start < duration && panel.isConnected) {
-                panel._accBurstRaf = requestAnimationFrame(tick);
-            } else {
-                panel._accBurstRaf = null;
-            }
-        };
-        panel._accBurstRaf = requestAnimationFrame(tick);
-    }
-
-    function openItem(item) {
-        const { btn, panel } = getDirectParts(item);
-        if (!btn || !panel) return;
-
-        btn.setAttribute('aria-expanded', 'true');
-        panel.setAttribute('aria-hidden', 'false');
-
-        // Animate from 0 -> px height, then settle to auto so nested changes are instant
-        measureForOpen(panel);
-        scheduleAuto(panel, 300);
-        burstAncestors(panel, 380);
-
-        if (hasInert) panel.inert = false;
-        else setFocusableDisabled(panel, false);
-    }
-
-    function closeItem(item) {
-        const { btn, panel } = getDirectParts(item);
-        if (!btn || !panel) return;
-
-        btn.setAttribute('aria-expanded', 'false');
-        panel.setAttribute('aria-hidden', 'true');
-
-        // If it was auto, lock it to px first so collapse animates
-        if (isAuto(panel)) {
-            panel.style.setProperty('--acc-max', panel.scrollHeight + 'px');
-            // force reflow to ensure transition picks up
-            // eslint-disable-next-line no-unused-expressions
-            panel.offsetHeight;
-        }
-        cancelAuto(panel);
-        // Now animate to 0
-        panel.style.setProperty('--acc-max', '0px');
-
-        const parentPanel = panel.parentElement ? panel.parentElement.closest('[data-accordion-content]') : null;
-        if (parentPanel) burstAncestors(parentPanel, 220);
-
-        if (hasInert) panel.inert = true;
-        else setFocusableDisabled(panel, true);
-    }
-
-    function toggleItem(item, willOpen, root) {
-        if (willOpen && root?.getAttribute('data-accordion') === 'single') {
-            getRootItems(root).forEach(i => { if (i !== item) closeItem(i); });
-        }
-        willOpen ? openItem(item) : closeItem(item);
-    }
-
-    // Keep --acc-max fresh on actual content resizes (images, etc.)
-    const ro = 'ResizeObserver' in window ? new ResizeObserver(entries => {
-        for (const entry of entries) {
-            const panel = entry.target;
-            const isHidden = panel.getAttribute('aria-hidden') === 'true';
-            if (!isHidden) {
-                if (!isAuto(panel)) {
-                    // during opening animation, track px height
-                    measureForOpen(panel);
-                }
-                // if already auto, no need to touch (it will adapt naturally)
-                refreshOpenAncestors(panel);
-            }
-        }
-    }) : null;
-
-    // Initialize each accordion root
-    document.querySelectorAll('[data-accordion]').forEach(root => {
-        const items = getRootItems(root);
-
-        items.forEach(item => {
-            const { btn, panel } = getDirectParts(item);
-            if (!btn || !panel) return;
-
-            if (!btn.hasAttribute('aria-expanded')) btn.setAttribute('aria-expanded', 'false');
-            if (!panel.hasAttribute('aria-hidden')) panel.setAttribute('aria-hidden', 'true');
-
-            // Initial measurement: if open at load, go straight to auto; else set px for closed/open logic
-            const isOpen = btn.getAttribute('aria-expanded') === 'true' || panel.getAttribute('aria-hidden') === 'false';
-            if (isOpen) {
-                setAuto(panel); // already open -> no pixel measuring; nested changes will be instant
-            } else {
-                panel.style.setProperty('--acc-max', '0px'); // closed initial state
-            }
-
-            if (hasInert) panel.inert = !isOpen;
-            else setFocusableDisabled(panel, !isOpen);
-
-            if (ro) ro.observe(panel);
-
-            // If panels contain images that load later, update on load
-            panel.querySelectorAll('img').forEach(img => {
-                img.addEventListener('load', () => {
-                    if (panel.getAttribute('aria-hidden') === 'false') {
-                        if (!isAuto(panel)) measureForOpen(panel);
-                        refreshOpenAncestors(panel);
-                    }
-                });
-            });
-        });
-
-        // Click (delegated) — scope strictly to this root
-        root.addEventListener('click', e => {
-            const btn = e.target.closest('[data-accordion-trigger]');
-            if (!btn) return;
-            if (btn.closest('[data-accordion]') !== root) return;
-
-            const item = btn.closest('[data-accordion-item]');
-            if (!item || item.closest('[data-accordion]') !== root) return;
-
-            const willOpen = btn.getAttribute('aria-expanded') !== 'true';
-            toggleItem(item, willOpen, root);
-        });
-
-        // Keyboard (delegated)
-        root.addEventListener('keydown', e => {
-            const currentBtn = e.target.closest('[data-accordion-trigger]');
-            if (!currentBtn || currentBtn.closest('[data-accordion]') !== root) return;
-
-            const allBtns = getRootButtons(root);
-            const idx = allBtns.indexOf(currentBtn);
-            if (idx === -1) return;
-
-            switch (e.key) {
-                case 'Enter':
-                case ' ':
-                    e.preventDefault();
-                    currentBtn.click();
-                    break;
-                case 'ArrowDown':
-                case 'ArrowRight': {
-                    e.preventDefault();
-                    const next = allBtns[(idx + 1) % allBtns.length];
-                    next?.focus();
-                    break;
-                }
-                case 'ArrowUp':
-                case 'ArrowLeft': {
-                    e.preventDefault();
-                    const prev = allBtns[(idx - 1 + allBtns.length) % allBtns.length];
-                    prev?.focus();
-                    break;
-                }
-                case 'Home':
-                    e.preventDefault();
-                    allBtns[0]?.focus();
-                    break;
-                case 'End':
-                    e.preventDefault();
-                    allBtns[allBtns.length - 1]?.focus();
-                    break;
-                default:
-                    break;
+                setMax(panel, measure(panel));
+                syncOpenAncestorPanels(panel);
             }
         });
-
-        // Optional: if a nested panel starts changing max-height, keep ancestors synced during open animation
-        root.addEventListener('transitionrun', (e) => {
-            const t = e.target;
-            if (!(t instanceof HTMLElement)) return;
-            if (!t.matches('[data-accordion-content]')) return;
-            if (e.propertyName !== 'max-height') return;
-            burstAncestors(t, 320);
-        });
+        ro.observe(panel);
+        disposers.push(() => ro.disconnect());
     });
-});*/
+
+    const onWin = () => {
+        entries.forEach(({ panel }) => {
+            if (panel.getAttribute('aria-hidden') === 'false') {
+                setMax(panel, measure(panel));
+                syncOpenAncestorPanels(panel);
+            }
+        });
+    };
+    window.addEventListener('resize', onWin);
+    disposers.push(() => window.removeEventListener('resize', onWin));
+
+    return () => disposers.forEach((off) => off && off());
+}
+
+/* -------------------- Ancestor snap hook -------------------- */
+function msFromTimeString(s) {
+    return s.endsWith('ms') ? parseFloat(s) : parseFloat(s || 0) * 1000;
+}
+function getTransitionMs(el, prop = 'max-height') {
+    const cs = getComputedStyle(el);
+    const props = cs.transitionProperty.split(',').map((x) => x.trim());
+    const durs = cs.transitionDuration.split(',').map((x) => x.trim());
+    const dels = cs.transitionDelay.split(',').map((x) => x.trim());
+    const len = Math.max(props.length, durs.length, dels.length);
+    let best = 0;
+    for (let i = 0; i < len; i++) {
+        const p = props[i] || props[props.length - 1] || 'all';
+        const dur = msFromTimeString(durs[i] || durs[durs.length - 1] || '0s');
+        const del = msFromTimeString(dels[i] || dels[dels.length - 1] || '0s');
+        if (p === prop || p === 'all') best = Math.max(best, dur + del);
+    }
+    return best;
+}
+function getOpenAncestorPanels(fromEl) {
+    const list = [];
+    let node = fromEl?.parentElement;
+    while (node) {
+        if (node.matches?.(accordionContentSelector) && node.getAttribute('aria-hidden') === 'false') {
+            list.push(node);
+        }
+        node = node.parentElement;
+    }
+    return list;
+}
+function snapAncestorsDuring(panel, run) {
+    const ancestors = getOpenAncestorPanels(panel);
+    if (!ancestors.length) {
+        run?.();
+        return;
+    }
+    if (panel._accSnap && typeof panel._accSnap.cleanup === 'function') {
+        panel._accSnap.cleanup();
+    }
+    ancestors.forEach((p) => p.style.setProperty('--acc-dur', '0s'));
+
+    let done = false;
+    const onEnd = (e) => {
+        if (e.propertyName === 'max-height') cleanup();
+    };
+    const fallbackMs = Math.max(200, getTransitionMs(panel, 'max-height') + 50);
+    const fallback = setTimeout(() => cleanup(), fallbackMs);
+
+    function cleanup() {
+        if (done) return;
+        done = true;
+        ancestors.forEach((p) => p.style.removeProperty('--acc-dur'));
+        panel.removeEventListener('transitionend', onEnd);
+        clearTimeout(fallback);
+        panel._accSnap = null;
+    }
+
+    panel.addEventListener('transitionend', onEnd);
+    panel._accSnap = { cleanup };
+
+    run?.();
+}
+
+/* -------------------- Query + state helpers -------------------- */
+function getAccordionEntries(root) {
+    const items = Array.from(root.querySelectorAll(accordionItemSelector))
+        .filter((item) => item.closest(accordionSelector) === root);
+
+    return items
+        .map((item) => {
+            const trigger = item.querySelector(accordionTriggerSelector);
+            const panel = item.querySelector(accordionContentSelector);
+            if (!trigger || !panel) return null;
+            return { item, trigger, panel };
+        })
+        .filter(Boolean);
+}
+
+function entryForNode(node, entries) {
+    if (!node) return null;
+    const el = node.closest?.(accordionItemSelector);
+    if (!el) return null;
+    return entries.find((e) => e.item === el) || null;
+}
+
+function setInitialState(root, entries) {
+    entries.forEach(({ item, trigger, panel }) => {
+        const isOpen =
+            trigger.getAttribute('aria-expanded') === 'true' ||
+            panel.getAttribute('aria-hidden') === 'false' ||
+            item.classList.contains('is-open');
+
+        setAriaExpanded(trigger, isOpen);
+        setAriaHidden(panel, !isOpen);
+        item.classList.toggle('is-open', isOpen);
+        setMax(panel, isOpen ? measure(panel) : 0);
+    });
+}
+
+/** Toggle one entry (returns final open state). */
+function toggleEntry(entry, forceOpen) {
+    const { item, trigger, panel } = entry;
+    const open = forceOpen ?? trigger.getAttribute('aria-expanded') !== 'true';
+
+    setAriaExpanded(trigger, open);
+    setAriaHidden(panel, !open);
+    item.classList.toggle('is-open', open);
+
+    snapAncestorsDuring(panel, () => {
+        open ? animateOpen(panel) : animateClose(panel);
+    });
+
+    afterLayout(() => {
+        updatePanelMaxHeight(panel);
+        syncOpenAncestorPanels(panel);
+    });
+
+    return open;
+}
+
+function closeAll(entries) {
+    entries.forEach((e) => toggleEntry(e, false));
+}
+
+/* -------------------- Mouse + keyboard events -------------------- */
+function bindClickHandling(root, entries) {
+    const onClick = (event) => {
+        const trigger = event.target.closest(accordionTriggerSelector);
+        if (!trigger) return;
+        if (trigger.closest(accordionSelector) !== root) return;
+
+        const entry = entries.find((e) => e.trigger === trigger);
+        if (!entry) return;
+
+        const mode = root.getAttribute('data-accordion'); // 'single' | 'multiple' | null
+        const willOpen = trigger.getAttribute('aria-expanded') !== 'true';
+
+        if (willOpen && mode === 'single') {
+            entries.forEach((other) => {
+                if (other !== entry) toggleEntry(other, false);
+            });
+        }
+
+        toggleEntry(entry, willOpen);
+        afterLayout(() => syncOpenAncestorPanels(entry.panel));
+    };
+
+    root.addEventListener('click', onClick);
+    return () => root.removeEventListener('click', onClick);
+}
+
+function bindKeyboardNavigation(root, entries) {
+    const triggers = entries.map((e) => e.trigger);
+
+    const onKeyDown = (event) => {
+        const target = event.target;
+        if (!triggers.includes(target)) return;
+        if (target.closest(accordionSelector) !== root) return;
+
+        // Enter / Space toggles
+        if (isActivationKey(event)) {
+            event.preventDefault();
+            target.click();
+            return;
+        }
+
+        // Arrow navigation (RTL/vertical agnostic via intent)
+        const intent = arrowIntent(event);
+        if (intent !== 0) {
+            event.preventDefault();
+            const i = triggers.indexOf(target);
+            const next = triggers[(i + intent + triggers.length) % triggers.length];
+            next?.focus();
+            return;
+        }
+
+        // Home / End jump
+        const { isHome, isEnd } = isHomeEnd(event);
+        if (isHome || isEnd) {
+            event.preventDefault();
+            (isHome ? triggers[0] : triggers[triggers.length - 1])?.focus();
+        }
+    };
+
+    root.addEventListener('keydown', onKeyDown);
+    return () => root.removeEventListener('keydown', onKeyDown);
+}
+
+/** ESC closes the relevant panel:
+ *  - If focus is on a trigger: close that trigger’s panel (if open).
+ *  - If focus is inside a panel: close the owning panel and move focus back to its trigger.
+ *  In 'single' mode with no focused item’s panel open, does nothing.
+ */
+function bindEscapeClose(root, entries) {
+    const off = onEscapeWithin(
+        root,
+        (e) => {
+            const active = document.activeElement;
+            let entry = null;
+
+            // Focus on trigger?
+            if (active && active.matches?.(accordionTriggerSelector)) {
+                entry = entries.find((en) => en.trigger === active) || null;
+                if (entry && entry.trigger.getAttribute('aria-expanded') === 'true') {
+                    e.preventDefault();
+                    toggleEntry(entry, false);
+                    return;
+                }
+            }
+
+            // Focus inside a panel?
+            const panel = active?.closest?.(accordionContentSelector);
+            if (panel) {
+                entry = entries.find((en) => en.panel === panel) || null;
+                if (entry && entry.panel.getAttribute('aria-hidden') === 'false') {
+                    e.preventDefault();
+                    toggleEntry(entry, false);
+                    // Return focus to owning trigger
+                    entry.trigger.focus({ preventScroll: true });
+                    return;
+                }
+            }
+        },
+        { prevent: true, stop: true, ignoreInInputs: true },
+    );
+
+    return off;
+}
+
+/* -------------------- Setup / Init -------------------- */
+function setupAccordion(root) {
+    if (!(root instanceof Element)) return;
+    if (root.dataset.accordionInit === 'true') return;
+
+    const entries = getAccordionEntries(root);
+    if (entries.length === 0) {
+        root.dataset.accordionInit = 'true';
+        return;
+    }
+
+    setInitialState(root, entries);
+
+    const disposers = [];
+    disposers.push(bindClickHandling(root, entries));
+    disposers.push(bindKeyboardNavigation(root, entries));
+    disposers.push(bindEscapeClose(root, entries));
+    disposers.push(bindResizeObservers(entries));
+
+    root.dataset.accordionInit = 'true';
+    root._accDispose = () => disposers.forEach((off) => off && off());
+}
+
+export function initAccordion(context = document) {
+    const scope =
+        context instanceof Element || context instanceof DocumentFragment ? context : document;
+    scope.querySelectorAll(accordionSelector).forEach(setupAccordion);
+}
+
+// Auto-init for static pages
+document.addEventListener('DOMContentLoaded', () => initAccordion(document));

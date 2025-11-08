@@ -44,7 +44,7 @@
 <a href="#main" class="u-skip-link">Skip to main content</a>
 
 {{--Header Start --}}
-@includeif('layout.header')
+@includeif('layout.header.index')
 {{-- Header End --}}
 
 

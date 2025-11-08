@@ -1,72 +1,91 @@
 @use "../.auto/abstracts.auto" as abs;
 
-.accordion {
-    margin: 0 auto;
-    width: 800px;
-    max-width: 100%;
-}
+[data-accordion] {}
 
-.accordion__item {
+[data-accordion-item] {
     width: 100%;
 }
 
-.accordion__header {
+[data-accordion-header] {
     display: flex;
-    justify-content: start;
     align-items: center;
-    width: 100%;
-    min-height: 48px;
-    height: 100px;
-    //padding: abs.rem(16) abs.rem(32);
+    inline-size: 100%;
+    min-block-size: 50px;
+    height: 50px;
     position: relative;
 
     background: abs.$color-bg-muted;
     border: abs.$border solid abs.$color-border;
+    border-block-start: none; // top border handled on first item
 }
 
-.accordion__header-button {
+/* First item gets a top border for a continuous stack */
+[data-accordion] > [data-accordion-item]:first-child [data-accordion-header] {
+    border-block-start: abs.$border solid abs.$color-border;
+}
+
+[data-accordion-trigger] {
+    display: flex;                 /* allow inner content alignment */
+    align-items: center;
+    justify-content: space-between;
+    inline-size: 100%;
+    block-size: 100%;
     padding: 0;
     border: none;
-    width: 100%;
-    height: 100%;
+    background: transparent;
+    text-align: start;
+    cursor: pointer;
 }
 
+/* --- Collapsible panel --- */
+[data-accordion-content] {
+    --acc-dur: var(--acc-dur-default, 300ms);
+    --acc-ease: var(--acc-ease-default, ease-in-out);
+
+    overflow: hidden;
+    block-size: auto;            /* for measuring scrollHeight */
+    pointer-events: none;
+    visibility: hidden;
+    max-height: var(--acc-max, 0);
+
+    transition:
+        visibility 0s linear var(--acc-dur),
+        max-height var(--acc-dur) var(--acc-ease);
+
+    will-change: max-height;
+}
+
+/* OPEN state: show immediately, interactable */
+[data-accordion-content][aria-hidden="false"] {
+    pointer-events: auto;
+    visibility: visible;
+    transition-delay: 0s, 0s; /* visibility, max-height */
+}
+
+/* CLOSED state: delay visibility so the collapse can animate */
+[data-accordion-content][aria-hidden="true"] {
+    transition-delay: var(--acc-dur), 0s; /* visibility (delayed), max-height */
+}
+
+/* Inner body */
 .accordion__content-inner {
-   width: 100%;
+    inline-size: 100%;
     border: abs.$border solid abs.$color-border;
     padding: abs.rem(16) abs.rem(32);
-
-    border-top: none;
-}
-[data-accordion-content] {
-    overflow: hidden;
-    //opacity: 0;
-    max-height: 0;
-    pointer-events: none;
-
-    /* replace abs.$duration-med with your actual variable/value */
-    transition: max-height abs.$duration-default ease-in-out,
-    opacity abs.$duration-med ease-in-out,
-;
+    border-block-start: none;  /* seam with header border */
 }
 
-[data-accordion-content][aria-hidden="false"] {
-    opacity: 1;
-    height: fit-content;
-    max-height: var(--acc-max, 0); /* set via JS to scrollHeight */
-    //max-height: 500px;
-    pointer-events: auto;
+/* Layout wrapper (optional demo constraints) */
+.accordion {
+    margin-inline: auto;
+    inline-size: 800px;
+    max-inline-size: 100%;
 }
 
+/* Respect user motion preferences */
 @media (prefers-reduced-motion: reduce) {
     [data-accordion-content] {
+        --acc-dur: 0s;
         transition: none;
     }
 }
-
-.accordion__content .accordion {
-    width: 100%;
-}
-
-
-.acc-no-trans [data-accordion-content] { transition: none !important; }
