@@ -1,6 +1,6 @@
 import './bootstrap';
 import './modules/header';
-import './modules/accordion.js'
+import './modules/accordion-2.js'
 
 
 
