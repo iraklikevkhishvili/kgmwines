@@ -17,7 +17,8 @@ import {
     getPrev,
     setPageInert,
     onEscapeWithin,
-    isActivationKey
+    isActivationKey,
+    trapFocus,
 } from '../core/a11y/index.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let undoInert;
     let disposeEsc;
+    let releaseFocusTrap;
     let offOutside;
 
     // --- Open / Close handlers ---
@@ -56,17 +58,23 @@ document.addEventListener('DOMContentLoaded', () => {
         header.classList.add('open');
         headerNav.classList.add('open');
 
-        setDisabledFocusWithin(header, true);
-        setDisabledFocusWithin(headerNav, false);
         // Inert the rest of the page + lock scroll
-        undoInert = setPageInert(headerNav, true, { lockScroll: true });
-        disposeEsc = registerEscape(() => closeNav(), { root: header, ignoreInInputs: true });
+        undoInert = setPageInert(headerNav, true, {lockScroll: true});
+        disposeEsc = registerEscape(() => closeNav(), {
+            root: header,
+            ignoreInInputs: true
+        });
+        releaseFocusTrap = trapFocus(headerNav, {
+            initialFocus: btnClose,
+            fallbackFocus: btnClose,
+            returnFocus: false,
+        });
         offOutside = onClickOutside(headerNav, () => closeNav(), {
             exclude: [btnOpen, headerNav],
             capture: true
         });
         // Move focus after inerting so tab can't escape
-        focusElement(btnClose, { defer: 'auto' });
+        focusElement(btnClose, {defer: 'auto'});
     }
 
     function closeNav() {
@@ -74,25 +82,32 @@ document.addEventListener('DOMContentLoaded', () => {
         setAriaHidden(headerNav, true);
         header.classList.remove('open');
         headerNav.classList.remove('open');
-        setDisabledFocusWithin(header, false);
 
         // Restore inert + scroll
-        if (typeof undoInert === 'function') { undoInert(); undoInert = null; }
-        if (typeof disposeEsc === 'function') { disposeEsc(); disposeEsc = null; }
-        if (typeof offOutside === 'function') { offOutside(); offOutside = null; }
+        if (typeof undoInert === 'function') {
+            undoInert();
+            undoInert = null;
+        }
+        if (typeof disposeEsc === 'function') {
+            disposeEsc();
+            disposeEsc = null;
+        }
+        if (typeof offOutside === 'function') {
+            offOutside();
+            offOutside = null;
+        }
+        if (typeof releaseFocusTrap === 'function') {
+            releaseFocusTrap();
+            releaseFocusTrap = null;
+        }
 
-        focusElement(btnOpen, { defer: 'auto' });
+        focusElement(btnOpen, {defer: 'auto'});
     }
 
     btnOpen.addEventListener('click', openNav);
     btnClose.addEventListener('click', closeNav);
+    //btnOpen.addEventListener('mouseover', openNav);
 });
-
-
-
-
-
-
 
 
 const NAV_ROOT = 'nav[data-navigation]';

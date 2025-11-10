@@ -2,8 +2,8 @@
 import { isEscape } from './keys.js';
 
 let _escInit = false;
-const _escStack = []; // { root, handler, ignoreInInputs, prevent, stop, ignoreRepeats, enabled:true }
-
+const _escStack = []; // { root, handler, ignoreInInputs, prevent, stop, ignoreRepeats, enabled:true, dispose }
+const _escItems = new Map(); // disposer -> item
 function isEditable(el) {
     if (!(el instanceof HTMLElement)) return false;
     const tag = el.tagName;
@@ -36,6 +36,7 @@ function _ensureEscInit() {
 
             // prune disconnected roots
             if (root && !root.isConnected) {
+                _escItems.delete(item.dispose);
                 _escStack.splice(i, 1);
                 continue;
             }
@@ -90,13 +91,16 @@ export function registerEscape(
     } = {}
 ) {
     _ensureEscInit();
-    const item = { root, handler, ignoreInInputs, prevent, stop, ignoreRepeats, enabled: true };
+    const item = { root, handler, ignoreInInputs, prevent, stop, ignoreRepeats, enabled: true, dispose: null };
     _escStack.push(item);
 
     const dispose = () => {
         const i = _escStack.indexOf(item);
         if (i >= 0) _escStack.splice(i, 1);
+        _escItems.delete(dispose);
     };
+    item.dispose = dispose;
+    _escItems.set(dispose, item);
 
     if (signal && typeof signal.addEventListener === 'function') {
         if (signal.aborted) dispose();
@@ -112,8 +116,8 @@ export function setEscapeEnabled(disposerOrBool, maybeBool) {
     if (typeof disposerOrBool === 'boolean') {
         const val = disposerOrBool;
         _escStack.forEach(it => { if (it) it.enabled = !!val; });
-    } else {
-        const idx = _escStack.indexOf(disposerOrBool);
-        if (idx >= 0) _escStack[idx].enabled = !!maybeBool;
+    } else if (typeof disposerOrBool === 'function') {
+        const item = _escItems.get(disposerOrBool);
+        if (item) item.enabled = !!maybeBool;
     }
 }
