@@ -47,7 +47,8 @@ body {
 
 :where(a, button, input, select, textarea, summary, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
     outline: abs.$focus-outline-width solid abs.$color-focus;
-    border-radius: inherit;
+    outline-offset: abs.$focus-outline-offset;
+    border-radius: abs.$border;
     z-index: 1;
     //  border-radius: inherit;
     /* soft halo without layout shift */

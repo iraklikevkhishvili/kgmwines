@@ -40,13 +40,6 @@ textarea {
     /* Firefox */
 }
 
-/* Focus states — accessible & consistent */
-:where(input, select, textarea, button):focus-visible {
-    outline: abs.$focus-outline-width solid abs.$color-focus;
-    outline-offset: abs.$focus-outline-offset;
-    border-radius: inherit;
-}
-
 /* Disabled / readonly */
 :where(input, select, textarea, button)[disabled],
 :where(input, select, textarea)[readonly] {

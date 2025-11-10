@@ -2,11 +2,13 @@
 
 [data-accordion] {}
 
-[data-accordion-item] {
+// [data-accordion-item]
+.accordion__item {
     width: 100%;
 }
 
-[data-accordion-header] {
+//[data-accordion-header]
+.accordion__header {
     display: flex;
     align-items: center;
     inline-size: 100%;
@@ -20,20 +22,19 @@
 }
 
 /* First item gets a top border for a continuous stack */
-[data-accordion] > [data-accordion-item]:first-child [data-accordion-header] {
+.accordion > .accordion__item:first-child .accordion__header {
     border-block-start: abs.$border solid abs.$color-border;
 }
 
-[data-accordion-trigger] {
+.accordion__header-button {
     display: flex;                 /* allow inner content alignment */
     align-items: center;
     justify-content: space-between;
-    inline-size: 100%;
-    block-size: 100%;
+    height: 100%;
+    width: 100%;
     padding: 0;
     border: none;
     background: transparent;
-    text-align: start;
     cursor: pointer;
 }
 
@@ -42,6 +43,7 @@
     --acc-dur: var(--acc-dur-default, 300ms);
     --acc-ease: var(--acc-ease-default, ease-in-out);
 
+    background: abs.$color-bg;
     overflow: hidden;
     block-size: auto;            /* for measuring scrollHeight */
     pointer-events: none;

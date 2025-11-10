@@ -8,34 +8,43 @@ import {
     onEscapeWithin,
 } from '../core/a11y/index.js';
 
+
 const accordionSelector = '[data-accordion]';
 const accordionItemSelector = '[data-accordion-item]';
 const accordionTriggerSelector = '[data-accordion-trigger]';
 const accordionContentSelector = '[data-accordion-content]';
 
-/* -------------------- Animation + sizing helpers -------------------- */
+
+/*======================================================
+ Animation + sizing helpers ---------------------------
+=======================================================*/
 function setMax(panel, px) {
     const v = `${Math.max(0, px)}px`;
     if (panel.style.getPropertyValue('--acc-max') !== v) {
         panel.style.setProperty('--acc-max', v);
     }
 }
+
 function measure(panel) {
     return (panel && panel.scrollHeight) || 0;
 }
+
 function animateOpen(panel) {
     setMax(panel, measure(panel));
 }
+
 function animateClose(panel) {
     setMax(panel, measure(panel));
     requestAnimationFrame(() => setMax(panel, 0));
 }
+
 /** If panel is open, keep its --acc-max in sync with current content size. */
 function updatePanelMaxHeight(panel) {
     if (panel instanceof HTMLElement && panel.getAttribute('aria-hidden') !== 'true') {
         setMax(panel, measure(panel));
     }
 }
+
 /** Recalculate --acc-max for any open ancestor accordion panels (for nesting). */
 function syncOpenAncestorPanels(fromEl) {
     let node = fromEl?.parentElement;
@@ -46,16 +55,19 @@ function syncOpenAncestorPanels(fromEl) {
         node = node.parentElement;
     }
 }
+
 /** Run after layout settles (2 rAFs ≈ next paint). */
 function afterLayout(cb) {
     requestAnimationFrame(() => requestAnimationFrame(cb));
 }
 
-/* -------------------- Observers -------------------- */
+/*======================================================
+ Observers ---------------------------------------------
+=======================================================*/
 function bindResizeObservers(entries) {
     const disposers = [];
 
-    entries.forEach(({ panel }) => {
+    entries.forEach(({panel}) => {
         const ro = new ResizeObserver(() => {
             if (panel.getAttribute('aria-hidden') === 'false') {
                 setMax(panel, measure(panel));
@@ -67,7 +79,7 @@ function bindResizeObservers(entries) {
     });
 
     const onWin = () => {
-        entries.forEach(({ panel }) => {
+        entries.forEach(({panel}) => {
             if (panel.getAttribute('aria-hidden') === 'false') {
                 setMax(panel, measure(panel));
                 syncOpenAncestorPanels(panel);
@@ -80,10 +92,14 @@ function bindResizeObservers(entries) {
     return () => disposers.forEach((off) => off && off());
 }
 
-/* -------------------- Ancestor snap hook -------------------- */
+
+/*======================================================
+ Ancestor snap hook ------------------------------------
+=======================================================*/
 function msFromTimeString(s) {
     return s.endsWith('ms') ? parseFloat(s) : parseFloat(s || 0) * 1000;
 }
+
 function getTransitionMs(el, prop = 'max-height') {
     const cs = getComputedStyle(el);
     const props = cs.transitionProperty.split(',').map((x) => x.trim());
@@ -99,6 +115,7 @@ function getTransitionMs(el, prop = 'max-height') {
     }
     return best;
 }
+
 function getOpenAncestorPanels(fromEl) {
     const list = [];
     let node = fromEl?.parentElement;
@@ -110,6 +127,7 @@ function getOpenAncestorPanels(fromEl) {
     }
     return list;
 }
+
 function snapAncestorsDuring(panel, run) {
     const ancestors = getOpenAncestorPanels(panel);
     if (!ancestors.length) {
@@ -138,12 +156,15 @@ function snapAncestorsDuring(panel, run) {
     }
 
     panel.addEventListener('transitionend', onEnd);
-    panel._accSnap = { cleanup };
+    panel._accSnap = {cleanup};
 
     run?.();
 }
 
-/* -------------------- Query + state helpers -------------------- */
+
+/*======================================================
+ Query + state helpers----------------------------------
+=======================================================*/
 function getAccordionEntries(root) {
     const items = Array.from(root.querySelectorAll(accordionItemSelector))
         .filter((item) => item.closest(accordionSelector) === root);
@@ -153,7 +174,7 @@ function getAccordionEntries(root) {
             const trigger = item.querySelector(accordionTriggerSelector);
             const panel = item.querySelector(accordionContentSelector);
             if (!trigger || !panel) return null;
-            return { item, trigger, panel };
+            return {item, trigger, panel};
         })
         .filter(Boolean);
 }
@@ -166,7 +187,7 @@ function entryForNode(node, entries) {
 }
 
 function setInitialState(root, entries) {
-    entries.forEach(({ item, trigger, panel }) => {
+    entries.forEach(({item, trigger, panel}) => {
         const isOpen =
             trigger.getAttribute('aria-expanded') === 'true' ||
             panel.getAttribute('aria-hidden') === 'false' ||
@@ -179,9 +200,11 @@ function setInitialState(root, entries) {
     });
 }
 
-/** Toggle one entry (returns final open state). */
+/**========================================================
+ * Toggle one entry (returns final open state) ------------
+ * =======================================================*/
 function toggleEntry(entry, forceOpen) {
-    const { item, trigger, panel } = entry;
+    const {item, trigger, panel} = entry;
     const open = forceOpen ?? trigger.getAttribute('aria-expanded') !== 'true';
 
     setAriaExpanded(trigger, open);
@@ -204,7 +227,9 @@ function closeAll(entries) {
     entries.forEach((e) => toggleEntry(e, false));
 }
 
-/* -------------------- Mouse + keyboard events -------------------- */
+/**========================================================
+ * Mouse + keyboard events --------------------------------
+ * =======================================================*/
 function bindClickHandling(root, entries) {
     const onClick = (event) => {
         const trigger = event.target.closest(accordionTriggerSelector);
@@ -257,7 +282,7 @@ function bindKeyboardNavigation(root, entries) {
         }
 
         // Home / End jump
-        const { isHome, isEnd } = isHomeEnd(event);
+        const {isHome, isEnd} = isHomeEnd(event);
         if (isHome || isEnd) {
             event.preventDefault();
             (isHome ? triggers[0] : triggers[triggers.length - 1])?.focus();
@@ -268,7 +293,8 @@ function bindKeyboardNavigation(root, entries) {
     return () => root.removeEventListener('keydown', onKeyDown);
 }
 
-/** ESC closes the relevant panel:
+/**
+ * ESC closes the relevant panel:
  *  - If focus is on a trigger: close that trigger’s panel (if open).
  *  - If focus is inside a panel: close the owning panel and move focus back to its trigger.
  *  In 'single' mode with no focused item’s panel open, does nothing.
@@ -298,12 +324,12 @@ function bindEscapeClose(root, entries) {
                     e.preventDefault();
                     toggleEntry(entry, false);
                     // Return focus to owning trigger
-                    entry.trigger.focus({ preventScroll: true });
+                    entry.trigger.focus({preventScroll: true});
                     return;
                 }
             }
         },
-        { prevent: true, stop: true, ignoreInInputs: true },
+        {prevent: true, stop: true, ignoreInInputs: true},
     );
 
     return off;
