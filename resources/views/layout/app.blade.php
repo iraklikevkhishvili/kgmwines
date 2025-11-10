@@ -19,7 +19,7 @@
 
 
     {{-- Fonts Start --}}
-    <link rel="preload" href="/static/fonts/asul-v21-latin-700.woff2" as="font" type="font/woff2"
+    <link rel="preload" href="/static/fonts/Asul-Bold.woff2" as="font" type="font/woff2"
           crossorigin="anonymous"/>
     <link rel="preload" href="/static/fonts/roboto-v47-latin-regular.woff2" as="font" type="font/woff2"
           crossorigin="anonymous"/>

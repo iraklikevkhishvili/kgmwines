@@ -7,7 +7,7 @@ const pageEntries = fg.sync([
     "resources/css/**/*.css",
     "resources/scss/pages/**/*.scss",
     "resources/scss/admin/pages/**/*.scss",
-    "resources/js/**/*.js",
+    //"resources/js/**/*.js",
     "resources/ts/pages/*.ts",
 ]);
 

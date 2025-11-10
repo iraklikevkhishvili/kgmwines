@@ -68,7 +68,6 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-right: abs.rem(16);
 }
 
 .header-nav__link {
@@ -100,6 +99,7 @@
     justify-content: center;
     background: transparent;
     border: none;
+    margin: abs.rem(8);
 }
 
 .header-nav__toggle-icon {
@@ -119,4 +119,18 @@
 .header-nav__toggle[aria-expanded="true"] .header-nav__toggle-icon {
     //transform: rotate(90deg);
     rotate: 180deg;
+}
+
+.header-nav__submenu {
+    padding-left: abs.rem(16);
+}
+.header-nav__submenu-link {
+    font-family: abs.$font-family-heading;
+    font-weight: abs.$font-weight-regular;
+    text-transform: uppercase;
+    margin: abs.rem(8);
+}
+
+.header-nav__submenu--level2 .header-nav__submenu-link {
+    text-transform: capitalize;
 }

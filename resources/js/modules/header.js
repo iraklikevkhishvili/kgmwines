@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Inert the rest of the page + lock scroll
         undoInert = setPageInert(headerNav, true, {lockScroll: true});
         disposeEsc = registerEscape(() => closeNav(), {
-            root: header,
+            header,
             ignoreInInputs: true
         });
         releaseFocusTrap = trapFocus(headerNav, {
